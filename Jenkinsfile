@@ -4,8 +4,7 @@ void uploadToNexus(String dirName, String platformName) {
     runNexusUpload(
         fileFormat: 'RAW',
         sourceFileGlob: "${dirName}/*",
-        // TODO: Use separate repo for YARA artifacts?
-        repoName: "guardmode-agent-RAW",
+        repoName: "yara-x-RAW",
         repoPath: "yara-x-capi/${platformName}",
         skipManifestUpdate: true
     )
@@ -14,7 +13,6 @@ void uploadToNexus(String dirName, String platformName) {
 void buildForLinux() {
     withCommonNodeOptions("docker", 1) {
         runCheckout()
-        sh "pwd"
 
         String publishDir = "publish-linux"
         sh "mkdir -p ${publishDir}"
@@ -31,9 +29,6 @@ void buildForLinux() {
 
 void buildForWindows()  {
     withCommonNodeOptions('windows2019', 1) {
-        runCheckout()
-        powershell "pwd"
-
         powershell "cargo cbuild -p yara-x-capi --release --target x86_64-pc-windows-msvc --target-dir yara-x/artifacts --manifest-path yara-x/Cargo.toml"
 
         String publishDir = "publish-windows"
