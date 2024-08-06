@@ -6,8 +6,12 @@ RUN apt-get update && \
 
 FROM yara_builder_base AS cloned_repo_base
 
+ARG TAG
 WORKDIR /build
 RUN git clone https://github.com/catalogicsoftware/yara-x
+WORKDIR /build/yara-x
+RUN git fetch --all --tags
+RUN git checkout $TAG
 
 FROM cloned_repo_base AS yara_builder
 

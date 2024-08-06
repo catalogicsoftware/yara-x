@@ -12,31 +12,42 @@ void uploadToNexus(String dirName, String platformName) {
 }
 
 void buildForLinux() {
-    String publishDir = "${env.SRC_DIR}/publish-linux"
+    String publishDir = "publish-linux"
     sh "mkdir -p ${publishDir}"
 
-    String buildImage = "yara-builder-${getCommitSha()}"
-    sh "docker build -t \"${buildImage}\" ${env.SRC_DIR}"
+    String buildImage = "yara-builder"
+    sh "docker build -t \"${buildImage}\" --arg TAG=${env.TAG_NAME} ."
     docker.image(buildImage).inside {
-        sh "cp /out/libyara_x_capi.so ${publishDir}"
+        sh "cp /out/libyara_x_capi.so ${publishDir}/libyara_x_capi.${env.TAG_NAME}.so"
     }
 
-    uploadToNexus("${env.SRC_DIR}/publish-linux", "linux")
+    uploadToNexus("publish-linux", "linux")
 }
 
 void buildForWindows()  {
-    String publishDir = "${env.SRC_DIR}/publish-windows"
-    sh "mkdir -p ${publishDir}"
+    String publishDir = "publish-windows"
+    powershell "mkdir ${publishDir} -ea 0"
 
     withCommonNodeOptions('windows2019', 1) {
         powershell "(Test-Path 'yara-x/') -and (rm -recurse yara-x)"
         powershell "git clone https://github.com/catalogicsoftware/yara-x"
+        powershell "cd yara-x; git fetch --all --tags; git checkout ${env.TAG_NAME}"
         powershell "cargo cbuild -p yara-x-capi --release --target x86_64-pc-windows-msvc --target-dir yara-x/artifacts --manifest-path yara-x/Cargo.toml"
-        powershell "cp yara-x/artifacts/x86_64-pc-windows-msvc/release/yara_x_capi.dll ${publishDir}"
+        powershell "cp yara-x/artifacts/x86_64-pc-windows-msvc/release/yara_x_capi.dll ${publishDir}/yara_x_capi.${env.TAG_NAME}.dll"
         powershell "rm -recurse yara-x"
     }
 
-    uploadToNexus("${env.SRC_DIR}/publish-windows", "windows")
+    uploadToNexus("publish-windows", "windows")
+}
+
+// TODO: How to do this???
+if(! env.TAG_NAME) {
+    return
+}
+
+// Ignore 'go' releases
+if(env.TAG_NAME.startsWith("go/")) {
+    return
 }
 
 withCommonNodeOptions("docker", 1) {
