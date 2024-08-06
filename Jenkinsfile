@@ -29,7 +29,7 @@ void buildForLinux() {
 
 void buildForWindows()  {
     withCommonNodeOptions('windows2019', 1) {
-        powershell "cargo cbuild -p yara-x-capi --release --target x86_64-pc-windows-msvc --target-dir yara-x/artifacts --manifest-path yara-x/Cargo.toml"
+        powershell "cargo cbuild -p yara-x-capi --release --target x86_64-pc-windows-msvc --target-dir yara-x/artifacts"
 
         String publishDir = "publish-windows"
         powershell "mkdir ${publishDir} -ea 0"
