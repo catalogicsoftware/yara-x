@@ -1,15 +1,15 @@
-@Library("dpx-jenkins-pipeline-library@master") _
+@Library("dpx-jenkins-pipeline-library@add-ignore-tag-flag") _
 
 void uploadToNexus(String dirName, String platformName) {
-    withEnv(["TAG_NAME="]){
-        runNexusUpload(
-            fileFormat: 'RAW',
-            sourceFileGlob: "${dirName}/*",
-            repoName: "yara-x-RAW",
-            repoPath: "yara-x-capi/${platformName}",
-            skipManifestUpdate: true
-        )
-    }
+    runNexusUpload(
+        fileFormat: 'RAW',
+        sourceFileGlob: "${dirName}/*",
+        repoName: "yara-x-RAW",
+        repoPath: "yara-x-capi/${platformName}",
+        skipManifestUpdate: true,
+        exactRepoNameProvided: true,
+        skipTeamsNotification: true
+    )
 }
 
 void buildForLinux() {
