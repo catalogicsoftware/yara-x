@@ -1,13 +1,15 @@
 @Library("dpx-jenkins-pipeline-library@master") _
 
 void uploadToNexus(String dirName, String platformName) {
-    runNexusUpload(
-        fileFormat: 'RAW',
-        sourceFileGlob: "${dirName}/*",
-        repoName: "yara-x-RAW",
-        repoPath: "yara-x-capi/${platformName}",
-        skipManifestUpdate: true
-    )
+    withEnv(["TAG_NAME="]){
+        runNexusUpload(
+            fileFormat: 'RAW',
+            sourceFileGlob: "${dirName}/*",
+            repoName: "yara-x-RAW",
+            repoPath: "yara-x-capi/${platformName}",
+            skipManifestUpdate: true
+        )
+    }
 }
 
 void buildForLinux() {
@@ -29,18 +31,16 @@ void buildForLinux() {
 
 void buildForWindows()  {
     withCommonNodeOptions('windows2019', 1) {
-        powershell "dir"
         checkout scm
-        powershell "dir"
 
         powershell "cargo cbuild -p yara-x-capi --release --target x86_64-pc-windows-msvc --target-dir yara-x/artifacts"
 
         String publishDir = "publish-windows"
         powershell "mkdir ${publishDir} -ea 0"
         powershell "cp yara-x/artifacts/x86_64-pc-windows-msvc/release/yara_x_capi.dll ${publishDir}/yara_x_capi.${env.TAG_NAME}.dll"
-    }
 
-    uploadToNexus("publish-windows", "windows")
+        uploadToNexus("publish-windows", "windows")
+    }
 }
 
 // TODO: How to do this???
