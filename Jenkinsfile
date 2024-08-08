@@ -41,28 +41,23 @@ void buildForWindows()  {
     }
 }
 
-// TODO: How to do this???
-if(! env.TAG_NAME) {
+// Ignore non-release builds & 'go' releases
+if(! env.TAG_NAME || env.TAG_NAME.startsWith("go/")) {
+    echo "Skipping build - not a matching release tag"
     return
-}
-
-// Ignore 'go' releases
-if(env.TAG_NAME.startsWith("go/")) {
-    return
-}
-
-def parallelBuildStageList = [:]
-parallelBuildStageList["linux"] = { 
-    stage("Linux") { 
-        buildForLinux() 
-    } 
-}
-parallelBuildStageList["windows"] = {
-    stage("Windows") {
-        buildForWindows()
-    }
 }
 
 stage('Build') {
-    parallel(parallelBuildStageList)
+    parallel([
+        { 
+            stage("Linux") { 
+                buildForLinux() 
+            } 
+        },
+        {
+            stage("Windows") {
+                buildForWindows()
+            }
+        }
+    ])
 }
