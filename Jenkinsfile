@@ -49,12 +49,12 @@ if(! env.TAG_NAME || env.TAG_NAME.startsWith("go/")) {
 
 stage('Build') {
     parallel([
-        { 
+        "linux": { 
             stage("Linux") { 
                 buildForLinux() 
             } 
         },
-        {
+        "windows": {
             stage("Windows") {
                 buildForWindows()
             }
