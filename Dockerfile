@@ -1,21 +1,20 @@
-FROM rust:1.79.0 AS yara_builder_base
+FROM amazonlinux:2 AS builder_base
 
+RUN yum -y update && \
+    yum -y groupinstall "Development Tools" && \
+    yum -y install openssl-devel && \
+    yum -y install glibc-devel
+
+RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y 
+
+ENV PATH="/root/.cargo/bin:${PATH}"
 RUN cargo install cargo-c
-RUN rustup target add x86_64-unknown-linux-musl
-RUN apt-get update && \
-    apt-get install -y libc6-dev musl-tools
 
-FROM yara_builder_base AS yara_builder
+FROM builder_base AS builder
 
 WORKDIR /build
 COPY . .
-RUN cargo cbuild -p yara-x-capi --release --target x86_64-unknown-linux-musl --target-dir /build/artifacts
-
-RUN mkdir -p /convert
-RUN cp /build/artifacts/x86_64-unknown-linux-musl/release/libyara_x_capi.a /convert/
-
-WORKDIR /convert
-RUN musl-gcc -shared -o libyara_x_capi.so -static-libgcc -static-libstdc++ -Wl,--whole-archive libyara_x_capi.a -Wl,--no-whole-archive
+RUN cargo cbuild -p yara-x-capi --release --target x86_64-unknown-linux-gnu --target-dir /build/artifacts
 
 RUN mkdir -p /out
-RUN cp /convert/libyara_x_capi.so /out/
+RUN cp -r /build/artifacts/x86_64-unknown-linux-gnu/release/libyara_x_capi.so /out/
