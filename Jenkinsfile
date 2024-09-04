@@ -20,7 +20,7 @@ void buildForLinux() {
         String buildImage = "yara-builder"
         sh "docker build -t \"${buildImage}\" ."
         docker.image(buildImage).inside {
-            sh "cp /out/libyara_x_capi.a ${publishDir}/libyara_x_capi.${env.TAG_NAME}.a"
+            sh "cp /out/libyara_x_capi.so ${publishDir}/libyara_x_capi.${env.TAG_NAME}.so"
         }
 
         uploadToNexus("publish-linux", "linux")

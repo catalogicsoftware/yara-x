@@ -11,5 +11,11 @@ WORKDIR /build
 COPY . .
 RUN cargo cbuild -p yara-x-capi --release --target x86_64-unknown-linux-musl --target-dir /build/artifacts
 
+RUN mkdir -p /convert
+RUN cp /build/artifacts/x86_64-unknown-linux-musl/release/libyara_x_capi.a /convert/
+
+WORKDIR /convert
+RUN gcc -shared -o libyara_x_capi.so -Wl,--whole-archive libyara_x_capi.a -Wl,--no-whole-archive
+
 RUN mkdir -p /out
-RUN cp -r /build/artifacts/x86_64-unknown-linux-musl/release/libyara_x_capi.a /out/
+RUN cp /convert/libyara_x_capi.so /out/
