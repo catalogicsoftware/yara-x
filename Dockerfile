@@ -1,10 +1,16 @@
-FROM rust:1.79.0 AS yara_builder_base
+FROM almalinux:8 AS builder_base
 
+RUN yum -y update && \
+    yum -y groupinstall "Development Tools" && \
+    yum -y install openssl-devel && \
+    yum -y install glibc-devel
+
+RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y 
+
+ENV PATH="/root/.cargo/bin:${PATH}"
 RUN cargo install cargo-c
-RUN apt-get update && \
-    apt-get install -y libc6-dev
 
-FROM yara_builder_base AS yara_builder
+FROM builder_base AS builder
 
 WORKDIR /build
 COPY . .
