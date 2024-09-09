@@ -1,4 +1,4 @@
-FROM amazonlinux:2 AS builder_base
+FROM almalinux:8 AS builder_base
 
 RUN yum -y update && \
     yum -y groupinstall "Development Tools" && \
